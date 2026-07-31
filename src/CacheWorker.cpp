@@ -229,7 +229,10 @@ uint64_t CacheWorker::doCache( std::shared_ptr<Media> m, Subscription* s,
     }
     auto cachedPath = m_ml->cachePath() + f->cachedFileName();
     if ( m_cacher->cache( f->mrl(), cachedPath ) == false )
+    {
+        utils::fs::remove( cachedPath );
         return 0;
+    }
     auto fileSize = f->size();
     if ( fileSize == 0 )
         fileSize = utils::fs::fileSize( cachedPath );
