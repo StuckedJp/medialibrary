@@ -71,17 +71,31 @@ static void RemoveTrack( Tests* T )
 {
     auto a = T->ml->createAlbum( "albumtag" );
     auto m = std::static_pointer_cast<Media>( T->ml->addMedia( "track.mp3", IMedia::Type::Audio ) );
+    m->setDuration( 100 );
     auto res = a->addTrack( m, 10, 0, 0, nullptr );
     ASSERT_TRUE( res );
     auto m2 = std::static_pointer_cast<Media>( T->ml->addMedia( "track2.mp3", IMedia::Type::Audio ) );
+    m2->setDuration( 200 );
     res = a->addTrack( m2, 11, 0, 0, nullptr );
     ASSERT_TRUE( res );
 
     auto tracks = a->tracks( nullptr )->all();
     ASSERT_EQ( tracks.size(), 2u );
+    ASSERT_EQ( a->nbTracks(), 2u );
+    ASSERT_EQ( a->nbPresentTracks(), 2u );
+    ASSERT_EQ( a->duration(), 300 );
 
     res = a->removeTrack( *m2 );
     ASSERT_TRUE( res );
+    ASSERT_EQ( a->nbTracks(), 1u );
+    ASSERT_EQ( a->nbPresentTracks(), 1u );
+    ASSERT_EQ( a->duration(), 100 );
+
+    auto a2 = std::static_pointer_cast<Album>( T->ml->album( a->id() ) );
+    ASSERT_EQ( a2->nbTracks(), 1u );
+    ASSERT_EQ( a2->nbPresentTracks(), 1u );
+    ASSERT_EQ( a2->duration(), 100 );
+
     res = a->removeTrack( *m );
     ASSERT_TRUE( res );
 }

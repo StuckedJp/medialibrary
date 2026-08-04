@@ -402,6 +402,10 @@ bool Album::addTrack( std::shared_ptr<Media> media, unsigned int trackNb,
 
 bool Album::removeTrack( Media& media )
 {
+    auto duration = media.duration() >= 0 ? media.duration() : 0;
+    auto isPresent = media.isPresent();
+    auto genre = std::static_pointer_cast<Genre>( media.genre() );
+
     /*
      * Remove references to genre/album/artist from the media table before we
      * start updating album & genre.
@@ -412,20 +416,13 @@ bool Album::removeTrack( Media& media )
     if ( media.setSubTypeUnknown() == false )
         return false;
 
-    static const std::string req = "UPDATE " + Table::Name + " SET "
-        "duration = duration - ? "
-        "WHERE id_album = ?";
-    auto duration = media.duration() >= 0 ? media.duration() : 0;
-    if ( sqlite::Tools::executeUpdate( m_ml->getConn(), req,
-                                       duration, m_id ) == false )
-        return false;
-
-    auto genre = std::static_pointer_cast<Genre>( media.genre() );
-    if ( genre != nullptr && genre->updateNbTracks( -1 ) )
-        return false;
+    if ( genre != nullptr )
+        genre->updateNbTracks( -1 );
 
     m_duration -= duration;
     m_nbTracks--;
+    if ( isPresent == true )
+        --m_nbPresentTracks;
     auto it = std::find_if( begin( m_tracks ), end( m_tracks ), [&media]( MediaPtr& m ) {
         return m->id() == media.id();
     });
