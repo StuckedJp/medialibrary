@@ -924,12 +924,15 @@ std::tuple<bool, bool> MetadataAnalyzer::refreshMedia( IItem& item ) const
 
     auto t = m_ml->getConn()->newTransaction();
 
+    const auto newType = isAudio == true ? IMedia::Type::Audio : IMedia::Type::Video;
+    bool needRescan = media->type() != newType ||
+            ( newType == IMedia::Type::Video && media->groupId() == 0 );
+
     /*
      * Media::setType already checks that the assigned type is different from
      * the current one so we can just call it blindly from here
      */
-    if ( media->setTypeInternal( isAudio == true ? IMedia::Type::Audio :
-                         IMedia::Type::Video ) == false ||
+    if ( media->setTypeInternal( newType ) == false ||
          VideoTrack::removeFromMedia( m_ml, media->id() ) == false ||
          AudioTrack::removeFromMedia( m_ml, media->id(), true ) == false ||
          SubtitleTrack::removeFromMedia( m_ml, media->id(), true ) == false )
@@ -952,7 +955,6 @@ std::tuple<bool, bool> MetadataAnalyzer::refreshMedia( IItem& item ) const
                   "concurrently deleted" );
         return std::make_tuple( false, false );
     }
-    bool needRescan = false;
     if ( media->subType() != IMedia::SubType::Unknown )
     {
         needRescan = true;
