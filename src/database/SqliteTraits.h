@@ -51,19 +51,13 @@ template <typename T, typename Enable = void>
 struct Traits;
 
 /*
- * Traits class that handles integer types that are *NOT* int64_t
+ * Traits class that handles integer types
  */
 template <typename T>
-struct Traits<T, typename std::enable_if<
-        std::is_integral<typename std::decay<T>::type>::value
-        && ! IsSameDecay<T, int64_t>::value
-    >::type>
+struct Traits<T, std::enable_if_t<std::is_integral<std::decay_t<T>>::value>>
 {
-    static constexpr
-    int (*Bind)(sqlite3_stmt *, int, int) = &sqlite3_bind_int;
-
-    static constexpr
-    int (*Load)(sqlite3_stmt *, int) = &sqlite3_column_int;
+    static constexpr auto Bind = &sqlite3_bind_int64;
+    static constexpr auto Load = &sqlite3_column_int64;
 };
 
 /**
@@ -177,22 +171,6 @@ struct Traits<T, typename std::enable_if<std::is_enum<
     {
         return static_cast<T>( sqlite3_column_int( stmt, pos ) );
     }
-};
-
-/**
- * Traits that handles int64_t
- *
- * int64 has special bind/load functions which causes it to be a dedicated
- * implementation and not the regular integer one.
- */
-template <typename T>
-struct Traits<T, typename std::enable_if<IsSameDecay<T, int64_t>::value>::type>
-{
-    static constexpr int
-    (*Bind)(sqlite3_stmt *, int, sqlite_int64) = &sqlite3_bind_int64;
-
-    static constexpr sqlite_int64
-    (*Load)(sqlite3_stmt *, int) = &sqlite3_column_int64;
 };
 
 template <typename Gen, template <typename...> class Inst>
