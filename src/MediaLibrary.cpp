@@ -771,6 +771,8 @@ InitializeResult MediaLibrary::initialize( IMediaLibraryCb* mlCallback )
      * the idle callback will be invoked with the lock held, which would deadlock.
      */
     lock.unlock();
+    if ( res != InitializeResult::Success && res != InitializeResult::DbReset )
+        return res;
     auto parser = getParser();
     if ( parser != nullptr )
         parser->start();
@@ -2229,6 +2231,8 @@ bool MediaLibrary::clearDatabase( bool restorePlaylists )
     {
         if ( recreateDatabase() == false )
             return false;
+        if ( parser != nullptr && parser->isRunning() == false )
+            parser->start();
         resumeBackgroundOperations();
         return true;
     }
@@ -2262,6 +2266,9 @@ bool MediaLibrary::clearDatabase( bool restorePlaylists )
 
     if ( recreateDatabase() == false )
         return false;
+
+    if ( parser != nullptr && parser->isRunning() == false )
+        parser->start();
 
     if ( playlistsBackups.empty() == false )
     {
