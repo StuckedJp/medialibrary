@@ -230,8 +230,8 @@ Query<Media> Subscription::cachedMedia( bool evictableOnly ) const
                 " ON m.id_media = mrt.media_id"
                 " WHERE mrt.subscription_id = ? AND"
                 " EXISTS(SELECT id_file FROM " + File::Table::Name +
-                " WHERE media_id = m.id_media AND type = ? AND "
-                " cache_type = ? OR m.play_count > 0)";
+                " WHERE media_id = m.id_media AND type = ? AND"
+                " (cache_type = ? OR m.play_count > 0))";
         const std::string order = " ORDER BY m.play_count DESC, m.release_date ASC";
         return make_query<Media>( m_ml, "m.*", req, order, m_id,
                         IFile::Type::Cache, File::CacheType::Automatic ).build();
