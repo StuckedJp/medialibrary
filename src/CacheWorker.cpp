@@ -306,7 +306,7 @@ bool CacheWorker::evictIfNeeded( const File& file, Subscription* s,
                    "/", maxMedia, " cached media" );
         while ( nbCachedMediaInSub >= static_cast<uint32_t>( maxMedia ) ||
                 ( maxSubCacheSize > 0 &&
-                  static_cast<uint64_t>( maxSubCacheSize ) >= subCacheSize ) )
+                  subCacheSize + file.size() > static_cast<uint64_t>( maxSubCacheSize ) ) )
         {
             auto toEvict = s->cachedMedia( true )->items( 1, 0 );
             if ( toEvict.size() != 1 )
@@ -323,6 +323,7 @@ bool CacheWorker::evictIfNeeded( const File& file, Subscription* s,
                 return false;
             m_cacheSize.fetch_sub( f->size(), std::memory_order_acq_rel );
             subCacheSize -= f->size();
+            --nbCachedMediaInSub;
         }
     }
     auto fileSize = file.size();
