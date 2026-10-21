@@ -3,4 +3,5 @@
 	url = https://code.videolan.org/videolan/medialibrary-test-samples.git
 [submodule "libvlcpp"]
 	path = libvlcpp
-	url = https://code.videolan.org/videolan/libvlcpp.git
+	url = git@github.com:StuckedJp/libvlcpp.git
+	branch = master
